@@ -1,0 +1,5 @@
+{
+  "name": "College Assignment Portal",
+  "description": "A React-based portal for students to upload assignments and for admins to manage submissions. Features authentication, file uploading, and responsive UI.",
+  "requestFramePermissions": []
+}
