@@ -1,15 +1,45 @@
 {
-    "name": "College Assignment Portal",
-    "short_name": "Assign Portal",
-    "description": "Student assignment submission portal - Submit and track your college assignments with ease",
+    "name": "AssignPortal - College Assignment Management System",
+    "short_name": "AssignPortal",
+    "description": "A modern College Assignment Submission Portal built with React, TypeScript, and Supabase. Streamlines assignment management for educational institutions with role-based access control, real-time submissions, comprehensive admin analytics, and stunning glassmorphism UI design.",
     "start_url": "/",
     "display": "standalone",
     "background_color": "#0a0e1a",
     "theme_color": "#0a0e1a",
     "orientation": "portrait-primary",
+    "scope": "/",
     "categories": [
         "education",
-        "productivity"
+        "productivity",
+        "utilities",
+        "business"
+    ],
+    "screenshots": [],
+    "shortcuts": [
+        {
+            "name": "Upload Assignment",
+            "short_name": "Upload",
+            "description": "Quickly upload your assignment",
+            "url": "/upload",
+            "icons": [
+                {
+                    "src": "/icon-192x192.png",
+                    "sizes": "192x192"
+                }
+            ]
+        },
+        {
+            "name": "View Assignments",
+            "short_name": "Assignments",
+            "description": "View your assignments",
+            "url": "/subjects",
+            "icons": [
+                {
+                    "src": "/icon-192x192.png",
+                    "sizes": "192x192"
+                }
+            ]
+        }
     ],
     "icons": [
         {

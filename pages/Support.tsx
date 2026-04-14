@@ -45,7 +45,7 @@ const Support: React.FC = () => {
   const faqs = [
     {
       question: "I can't log in to my account.",
-      answer: "Please ensure you are using your provided student ID and password. If you forgot your password, please contact the CR to reset it."
+      answer: "Please ensure you are using your provided student ID and password. If you forgot your password, please contact the ADMIN to reset it."
     },
     {
       question: "My file upload failed. What should I do?",

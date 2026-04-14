@@ -375,7 +375,7 @@ AssignPortal-Supa/
 ├── 📄 .env.example               # Environment template
 ├── 📄 package.json               # Dependencies & scripts
 ├── 📄 PLANNING.md                # Project roadmap & planning
-├── 📄 LICENSE                    # MIT License
+├── 📄 LICENSE                    # Apache License 2.0
 └── 📄 README.md                  # This file
 ```
 
@@ -406,7 +406,7 @@ AssignPortal-Supa/
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/yourusername/AssignPortal-Supa.git
+git clone https://github.com/nadeem12q/assign_supabased.git
 cd AssignPortal-Supa
 
 # 2. Install dependencies
@@ -428,7 +428,7 @@ The app will be available at **`http://localhost:5173`**
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/AssignPortal-Supa.git
+git clone https://github.com/nadeem12q/assign_supabased.git
 cd AssignPortal-Supa
 
 # Install dependencies (this may take 2-3 minutes)
@@ -1921,15 +1921,17 @@ chore: update dependencies
 
 ## 📄 License
 
-This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the **Apache License 2.0** - see the [LICENSE](LICENSE) file for details.
 
-### MIT License Summary
+### Apache 2.0 License Summary
 
 - ✅ Commercial use allowed
 - ✅ Modification allowed
 - ✅ Distribution allowed
 - ✅ Private use allowed
+- ✅ Patent protection included
 - ⚠️ Must include license and copyright notice
+- ⚠️ Must state changes made to files
 - ⚠️ No warranty provided
 
 ---
@@ -2010,12 +2012,587 @@ For security issues or private inquiries:
 
 ---
 
+## ⚡ Performance Optimization
+
+### Frontend Optimization
+
+#### Code Splitting
+All pages are lazy-loaded using `React.lazy()` to reduce initial bundle size:
+
+```typescript
+const Admin = lazy(() => import('./pages/Admin'));
+const Upload = lazy(() => import('./pages/Upload'));
+```
+
+#### Data Caching (SWR)
+SWR provides intelligent caching with:
+- **Stale-while-revalidate**: Show cached data immediately, refresh in background
+- **Deduplication**: Multiple requests for same data merged
+- **Automatic revalidation**: Refresh when user focuses window
+
+```typescript
+const { data, error, isLoading } = useSWR('/api/subjects', fetcher, {
+  revalidateOnFocus: true,
+  revalidateOnReconnect: true,
+  dedupingInterval: 60000 // 1 minute
+});
+```
+
+#### Image Optimization
+- Icons use SVG format (scalable, small file size)
+- PWA icons in multiple sizes for different devices
+- Lazy loading for large images if added
+
+### Backend Optimization
+
+#### Database Indexes
+Critical indexes for fast queries:
+
+```sql
+CREATE INDEX idx_assignments_subject_id ON assignments(subject_id);
+CREATE INDEX idx_assignments_status ON assignments(status);
+CREATE INDEX idx_assignments_due_date ON assignments(due_date);
+CREATE INDEX idx_submissions_assignment_id ON submissions(assignment_id);
+CREATE INDEX idx_submissions_student_id ON submissions(student_id);
+CREATE INDEX idx_submissions_uploaded_at ON submissions(uploaded_at);
+```
+
+#### Query Optimization
+- Use `select()` with specific columns instead of `select('*')`
+- Limit results with pagination for large datasets
+- Use Supabase's edge functions for complex computations
+
+#### Storage Optimization
+- File size limit: 25MB (configurable)
+- Automatic file compression for images (if added)
+- CDN-ready signed URLs for file downloads
+
+### Network Optimization
+
+#### Timeout Configuration
+All Supabase calls have timeout wrappers:
+- Auth operations: 20-30 seconds
+- Database queries: 10-15 seconds
+- File uploads: No timeout (progress tracking)
+
+#### Request Batching
+- SWR automatically dedupes concurrent requests
+- Batch file uploads not yet implemented (planned)
+
+---
+
+## 🔒 Security Best Practices
+
+### Authentication Security
+
+#### Password Requirements
+- Minimum 8 characters (enforced by Supabase)
+- Email verification required (configurable)
+- Session timeout: 1 hour (Supabase default)
+
+#### Token Management
+- JWT tokens stored in Supabase Auth
+- Automatic token refresh on expiry
+- Secure token transmission via HTTPS
+
+### Data Security
+
+#### Row Level Security (RLS)
+All database tables have RLS policies:
+- Students can only see their own submissions
+- Admins can see all data
+- Public cannot access any data
+
+```sql
+-- Example RLS policy for submissions
+CREATE POLICY "Students can view own submissions"
+ON submissions FOR SELECT
+USING (auth.uid() = student_id);
+
+CREATE POLICY "Admins can view all submissions"
+ON submissions FOR SELECT
+USING (
+  EXISTS (
+    SELECT 1 FROM profiles
+    WHERE id = auth.uid() AND role = 'admin'
+  )
+);
+```
+
+#### Storage Security
+- Private storage bucket (not public)
+- Signed URLs for file downloads (7-day expiry)
+- RLS policies on storage bucket
+
+### API Security
+
+#### Environment Variables
+- Never commit `.env` file
+- Use `.env.example` as template
+- Rotate anon keys regularly
+
+#### Input Validation
+- File type validation on frontend
+- File size limits enforced
+- SQL injection prevention via parameterized queries (Supabase)
+
+### CORS Configuration
+Configure allowed origins in Supabase:
+```javascript
+// In Supabase Dashboard → API → CORS
+https://yourdomain.com
+https://www.yourdomain.com
+```
+
+---
+
+## ❓ Frequently Asked Questions (FAQ)
+
+### General Questions
+
+**Q: Can students self-register?**
+A: No, AssignPortal uses closed registration. Admins must create student accounts manually in Supabase.
+
+**Q: What's the maximum file upload size?**
+A: Default is 25MB, configurable via `VITE_MAX_FILE_SIZE_MB` environment variable.
+
+**Q: Can I use this without Supabase?**
+A: No, AssignPortal is tightly integrated with Supabase for authentication, database, and storage. You would need to refactor the entire backend to use a different service.
+
+**Q: Is there a mobile app?**
+A: AssignPortal is a PWA (Progressive Web App) that can be installed on mobile devices. A native React Native app is planned for v2.0.
+
+### Technical Questions
+
+**Q: Why use SWR instead of React Query?**
+A: SWR was chosen for its simplicity and excellent caching strategy. Both libraries would work equally well.
+
+**Q: Can I change the color scheme?**
+A: Yes, modify CSS variables in `index.css` or subject colors in the database.
+
+**Q: How do I add new user roles?**
+A: Update the `UserRole` enum in `types.ts`, add role check in RLS policies, and update `AuthContext`.
+
+**Q: What happens if Supabase is down?**
+A: The app shows a fallback UI. Implement offline caching in future versions for full offline support.
+
+### Deployment Questions
+
+**Q: Can I deploy to shared hosting?**
+A: Only if it supports Node.js and allows environment variables. Recommended: Vercel, Netlify, or your own VPS.
+
+**Q: Do I need a separate backend server?**
+A: No, Supabase provides the complete backend. This is a frontend-only application.
+
+**Q: How do I handle database migrations?**
+A: Use Supabase's SQL editor or the Supabase CLI for migrations. Keep a migration log.
+
+---
+
+## 🌐 Browser Compatibility
+
+### Supported Browsers
+
+| Browser | Minimum Version | Notes |
+|---------|----------------|-------|
+| **Chrome** | 90+ | Full support |
+| **Firefox** | 88+ | Full support |
+| **Safari** | 14+ | Full support (iOS & macOS) |
+| **Edge** | 90+ | Full support |
+| **Opera** | 76+ | Full support |
+
+### Browser-Specific Notes
+
+#### Safari (iOS)
+- PWA install requires iOS 16.4+
+- Some backdrop-filter effects may have reduced performance
+- File picker behavior differs from desktop
+
+#### Mobile Browsers
+- Touch-optimized UI
+- Responsive design works on all screen sizes
+- PWA install prompt on supported browsers
+
+#### Legacy Browsers
+- Internet Explorer: Not supported
+- Older browsers: May have missing features
+
+### Progressive Enhancement
+The app uses feature detection and provides fallbacks:
+- CSS Grid/Flexbox with fallbacks
+- ES6+ with transpilation via Vite
+- Service Worker with graceful degradation
+
+---
+
+## ♿ Accessibility Features
+
+### WCAG 2.1 Compliance
+
+AssignPortal aims for WCAG 2.1 Level AA compliance:
+
+#### Visual Accessibility
+- **Color Contrast**: All text meets 4.5:1 contrast ratio
+- **Color Independence**: Information not conveyed by color alone
+- **Text Resizing**: UI scales up to 200% without breaking
+- **Focus Indicators**: Clear focus states for keyboard navigation
+
+#### Keyboard Accessibility
+- **Full Keyboard Navigation**: All features accessible via keyboard
+- **Tab Order**: Logical tab sequence through interactive elements
+- **Shortcuts**: No custom shortcuts (relies on browser defaults)
+- **Skip Links**: Not yet implemented (planned)
+
+#### Screen Reader Support
+- **Semantic HTML**: Proper heading structure, landmarks
+- **ARIA Labels**: Added where needed for dynamic content
+- **Alt Text**: All images have descriptive alt text
+- **Live Regions**: Toast notifications use ARIA live regions
+
+#### Cognitive Accessibility
+- **Clear Labels**: Form fields have clear, descriptive labels
+- **Error Messages**: Specific, actionable error messages
+- **Consistent Layout**: Predictable navigation and UI patterns
+- **No Time Limits**: No automatic timeouts (except auth session)
+
+### Testing Accessibility
+Test with:
+- [WAVE](https://wave.webaim.org/) - Web accessibility evaluation tool
+- [axe DevTools](https://www.deque.com/axe/) - Browser extension
+- Screen readers: NVDA (Windows), VoiceOver (macOS/iOS)
+
+---
+
+## 📊 Monitoring & Logging
+
+### Application Monitoring
+
+#### Frontend Monitoring
+- **Error Boundary**: Catches React errors and logs them
+- **Console Logging**: Development mode has verbose logging
+- **Performance Metrics**: Use Web Vitals API (planned)
+
+#### Backend Monitoring (Supabase)
+- **Dashboard Logs**: View in Supabase Dashboard → Logs
+- **Database Logs**: Query performance and errors
+- **Auth Logs**: Login attempts and session events
+- **Storage Logs**: File upload/download events
+
+### Recommended Monitoring Tools
+
+#### Error Tracking
+- **Sentry**: JavaScript error tracking
+- **LogRocket**: Session replay and error tracking
+- **Supabase Logs**: Built-in logging
+
+#### Analytics
+- **Google Analytics 4**: User behavior tracking
+- **Plausible**: Privacy-focused analytics
+- **Supabase Analytics**: Built-in database analytics
+
+### Logging Best Practices
+
+#### Frontend Logging
+```typescript
+// Development mode only
+if (import.meta.env.DEV) {
+  console.log('[Auth] User signed in:', user.email);
+}
+
+// Error logging
+console.error('[Upload] File upload failed:', error);
+```
+
+#### Backend Logging
+```sql
+-- Add logging trigger in Supabase
+CREATE OR REPLACE FUNCTION log_submission()
+RETURNS TRIGGER AS $$
+BEGIN
+  INSERT INTO audit_log (action, table_name, record_id)
+  VALUES ('INSERT', 'submissions', NEW.id);
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+```
+
+---
+
+## ⚙️ Configuration Reference
+
+### Environment Variables
+
+| Variable | Required | Default | Description |
+|----------|----------|---------|-------------|
+| `VITE_SUPABASE_URL` | ✅ Yes | - | Supabase project URL |
+| `VITE_SUPABASE_ANON_KEY` | ✅ Yes | - | Supabase anon public key |
+| `VITE_STORAGE_BUCKET` | ❌ No | `assignments` | Storage bucket name |
+| `VITE_MAX_FILE_SIZE_MB` | ❌ No | `25` | Max upload size in MB |
+| `VITE_APP_MODE` | ❌ No | `supabase` | Application mode identifier |
+
+### Application Config (config.ts)
+
+```typescript
+export const CONFIG = {
+  APP_MODE: import.meta.env.VITE_APP_MODE || 'supabase',
+  MAX_FILE_SIZE_MB: Number(import.meta.env.VITE_MAX_FILE_SIZE_MB) || 25,
+};
+```
+
+### Supabase Configuration
+
+#### Auth Settings
+- **Email Confirmation**: Optional (recommended for production)
+- **Session Duration**: 1 hour (configurable)
+- **Password Requirements**: Minimum 8 characters
+
+#### Database Settings
+- **Connection Pooling**: Automatic (Supabase managed)
+- **Backup**: Daily backups (Supabase free tier)
+- **Point-in-Time Recovery**: Available on paid tiers
+
+#### Storage Settings
+- **Bucket Type**: Private (recommended)
+- **File Size Limit**: 50MB (Supabase limit)
+- **CDN**: Automatic via Supabase
+
+### Theme Configuration
+
+CSS Variables in `index.css`:
+```css
+:root {
+  --bg-primary: #0a0e1a;
+  --bg-secondary: #151926;
+  --text-primary: #ffffff;
+  --text-secondary: #a0aec0;
+  --accent-purple: #8b5cf6;
+  --accent-green: #10b981;
+  --accent-red: #ef4444;
+  --glass: rgba(255, 255, 255, 0.05);
+  --glass-border: rgba(255, 255, 255, 0.1);
+}
+```
+
+---
+
+## 💾 Backup & Recovery
+
+### Database Backup
+
+#### Supabase Automatic Backups
+- **Free Tier**: Daily backups retained for 7 days
+- **Pro Tier**: Daily backups retained for 30 days
+- **Point-in-Time Recovery**: Available on Pro tier
+
+#### Manual Backup
+```sql
+-- Export entire database
+-- Use Supabase Dashboard → Database → Backups → Export
+```
+
+### Storage Backup
+
+#### File Backup Strategy
+```bash
+# Using Supabase CLI
+supabase storage download --bucket assignments --local-backup ./backups
+```
+
+#### Backup Schedule
+- **Daily**: Automated via Supabase
+- **Weekly**: Manual backup to external storage
+- **Before Major Changes**: Manual snapshot
+
+### Recovery Procedures
+
+#### Database Recovery
+1. Go to Supabase Dashboard → Database → Backups
+2. Select backup point
+3. Click "Restore"
+4. Wait for restoration (5-15 minutes)
+
+#### Storage Recovery
+1. Use Supabase CLI or Dashboard
+2. Upload backed-up files
+3. Update file paths in database if needed
+
+### Disaster Recovery Plan
+
+#### Scenario 1: Accidental Data Deletion
+- Use Supabase point-in-time recovery
+- Restore from daily backup if within retention period
+
+#### Scenario 2: Supabase Outage
+- App shows fallback UI
+- Monitor Supabase status page
+- No action needed until service restored
+
+#### Scenario 3: Security Breach
+- Rotate all API keys immediately
+- Review audit logs
+- Force password reset for all users
+- Restore from pre-breach backup
+
+---
+
+## 🌍 Internationalization (i18n)
+
+### Current Status
+AssignPortal is currently **English-only**. Internationalization support is planned for v1.2.
+
+### Planned i18n Features
+- Multi-language support (Urdu, Hindi, Arabic, etc.)
+- RTL (Right-to-Left) layout support
+- Date/time localization
+- Currency formatting (if needed)
+
+### Implementation Plan
+1. Extract all text strings to translation files
+2. Use `react-i18next` for translations
+3. Add language switcher component
+4. Implement RTL layout support
+5. Test with target languages
+
+### Contributing Translations
+When i18n is implemented:
+1. Fork the repository
+2. Add translation file for your language
+3. Update language list in config
+4. Submit pull request
+
+---
+
+## 📱 PWA Features
+
+### Installation
+
+#### Desktop (Chrome/Edge)
+1. Visit AssignPortal
+2. Click install icon in address bar
+3. Confirm installation
+4. App launches as standalone window
+
+#### Mobile (iOS Safari)
+1. Visit AssignPortal
+2. Tap Share button
+3. Select "Add to Home Screen"
+4. Confirm installation
+
+#### Mobile (Android Chrome)
+1. Visit AssignPortal
+2. Tap install prompt (appears automatically)
+3. Confirm installation
+4. App added to home screen
+
+### PWA Capabilities
+
+#### Offline Support
+- Service worker caches static assets
+- Offline fallback page shown
+- Data requires online connection
+
+#### App-like Experience
+- Full-screen mode
+- Custom splash screen
+- App icon on home screen
+- No browser chrome
+
+#### Background Sync
+- Not yet implemented (planned)
+- Will sync submissions when online
+
+### PWA Manifest Configuration
+
+Located at `public/manifest.json`:
+- App name and short name
+- Icons (192x192, 512x512)
+- Theme colors
+- Display mode (standalone)
+- Orientation (portrait-primary)
+- Categories (education, productivity)
+
+---
+
+## 🔗 API Reference
+
+### Supabase Client Functions
+
+#### Authentication
+```typescript
+signIn(email: string, password: string): Promise<User>
+signOut(): Promise<void>
+getCurrentUser(): Promise<User | null>
+onAuthStateChange(callback: Function): Subscription
+```
+
+#### Subjects
+```typescript
+getSubjects(): Promise<Subject[]>
+getAllSubjects(): Promise<Subject[]>
+createSubject(subject: Subject): Promise<Subject>
+updateSubject(id: string, updates: Partial<Subject>): Promise<Subject>
+deleteSubject(id: string): Promise<boolean>
+```
+
+#### Assignments
+```typescript
+getAssignments(): Promise<Assignment[]>
+getAssignmentsBySubject(subjectId: string): Promise<Assignment[]>
+getAssignment(id: string): Promise<Assignment | null>
+createAssignment(assignment: Assignment): Promise<Assignment>
+updateAssignment(id: string, updates: Partial<Assignment>): Promise<Assignment>
+deleteAssignment(id: string): Promise<boolean>
+```
+
+#### Submissions
+```typescript
+getSubmissions(assignmentId?: string): Promise<Submission[]>
+getStudentSubmissions(studentId: string): Promise<Submission[]>
+submitAssignment(file: File, assignmentId: string, subjectId: string, student: User): Promise<Submission>
+```
+
+#### File Upload
+```typescript
+uploadFile(file: File, subjectId: string, assignmentFolder: string, studentName: string): Promise<{path: string, url: string}>
+getSignedUrl(path: string, expiresIn?: number): Promise<string>
+deleteFile(path: string): Promise<boolean>
+```
+
+### API Response Formats
+
+#### Success Response
+```typescript
+{
+  data: T,
+  error: null
+}
+```
+
+#### Error Response
+```typescript
+{
+  data: null,
+  error: {
+    message: string,
+    code: string,
+    details?: any
+  }
+}
+```
+
+### Rate Limiting
+- Supabase free tier: 50,000 requests/month
+- Supabase Pro tier: 100,000 requests/month
+- Implement client-side rate limiting if needed
+
+---
+
 <p align="center">
   <strong>Made with ❤️ for students and educators</strong>
 </p>
 
 <p align="center">
-  <a href="https://github.com/yourusername/AssignPortal-Supa">⭐ Star us on GitHub</a> •
+  <a href="https://github.com/nadeem12q/assign_supabased">⭐ Star us on GitHub</a> •
   <a href="https://twitter.com/assignportal">🐦 Follow on Twitter</a> •
   <a href="https://discord.gg/assignportal">💬 Join Discord</a>
 </p>

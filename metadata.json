@@ -1,5 +1,48 @@
 {
-  "name": "College Assignment Portal",
-  "description": "A React-based portal for students to upload assignments and for admins to manage submissions. Features authentication, file uploading, and responsive UI.",
+  "name": "AssignPortal - College Assignment Management System",
+  "shortName": "AssignPortal",
+  "description": "A modern, full-featured College Assignment Submission Portal built with React, TypeScript, and Supabase. Streamlines assignment management for educational institutions with role-based access control, real-time submissions, comprehensive admin analytics, and stunning glassmorphism UI design.",
+  "longDescription": "AssignPortal is a production-ready College Assignment Management System designed for educational institutions. Built with modern web technologies, it offers a seamless experience for both students and administrators with enterprise-grade security, real-time analytics, and an intuitive glassmorphism interface. Features include drag-and-drop file uploads, automatic folder organization, submission tracking, dashboard analytics, and mobile PWA support.",
+  "version": "1.0.0",
+  "author": "NADEEM",
+  "license": "Apache-2.0",
+  "keywords": [
+    "education",
+    "assignment",
+    "portal",
+    "college",
+    "university",
+    "student",
+    "submission",
+    "file-upload",
+    "react",
+    "typescript",
+    "supabase",
+    "pwa",
+    "glassmorphism"
+  ],
+  "category": "Education",
+  "homepage": "https://github.com/nadeem12q/assign_supabased",
+  "repository": "https://github.com/nadeem12q/assign_supabased",
+  "features": [
+    "Role-based access control (Admin & Student)",
+    "Drag-and-drop file upload with progress tracking",
+    "Automatic folder organization by subject and assignment",
+    "Real-time submission tracking and analytics",
+    "Dashboard with charts and statistics",
+    "Dark/Light mode support",
+    "PWA support for mobile installation",
+    "Glassmorphism UI design",
+    "Secure authentication with Supabase",
+    "Responsive design for all devices"
+  ],
+  "techStack": {
+    "frontend": "React 18 + TypeScript",
+    "backend": "Supabase (PostgreSQL + Auth + Storage)",
+    "styling": "Tailwind CSS",
+    "buildTool": "Vite",
+    "stateManagement": "React Context + SWR",
+    "charts": "Recharts"
+  },
   "requestFramePermissions": []
 }

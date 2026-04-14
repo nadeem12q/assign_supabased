@@ -1,12 +1,42 @@
 {
-  "name": "college-assignment-portal",
+  "name": "assignportal-college-assignment-management",
   "private": true,
   "version": "1.0.0",
+  "description": "A modern, full-featured College Assignment Submission Portal built with React, TypeScript, and Supabase. Streamlines assignment management for educational institutions with role-based access control, real-time submissions, comprehensive admin analytics, and stunning glassmorphism UI design.",
+  "author": "NADEEM",
+  "license": "Apache-2.0",
+  "homepage": "https://github.com/nadeem12q/assign_supabased#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nadeem12q/assign_supabased.git"
+  },
+  "bugs": {
+    "url": "https://github.com/nadeem12q/assign_supabased/issues"
+  },
+  "keywords": [
+    "education",
+    "assignment",
+    "portal",
+    "college",
+    "university",
+    "student",
+    "submission",
+    "file-upload",
+    "react",
+    "typescript",
+    "supabase",
+    "pwa",
+    "glassmorphism",
+    "assignment-management",
+    "coursework",
+    "learning-management"
+  ],
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.99.2",
