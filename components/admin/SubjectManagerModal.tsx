@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Subject } from '../../types';
 import toast from 'react-hot-toast';
-import { createSubject, deleteSubject } from '../../services/supabaseApi';
+import { createSubject, deleteSubject, updateSubject } from '../../services/supabaseApi';
 
 interface SubjectManagerModalProps {
     isOpen: boolean;
@@ -26,6 +26,7 @@ const SubjectManagerModal: React.FC<SubjectManagerModalProps> = ({
     });
     const [subjectErrors, setSubjectErrors] = useState<Record<string, string>>({});
     const [isSubjectSubmitting, setIsSubjectSubmitting] = useState(false);
+    const [editingSubject, setEditingSubject] = useState<Subject | null>(null);
 
     const handleFormChange = (field: string, value: string) => {
         setSubjectFormData(prev => ({ ...prev, [field]: value }));
@@ -70,6 +71,41 @@ const SubjectManagerModal: React.FC<SubjectManagerModalProps> = ({
             onSubjectsChanged();
         } catch (error: any) {
             toast.error(error.message || 'Failed to delete subject. Please try again.');
+        }
+    };
+
+    const handleEditClick = (subject: Subject) => {
+        setEditingSubject(subject);
+        setSubjectFormData({
+            id: subject.id,
+            name: subject.name,
+            color: subject.color || '#8b5cf6'
+        });
+    };
+
+    const handleCancelEdit = () => {
+        setEditingSubject(null);
+        setSubjectFormData({ id: '', name: '', color: '#8b5cf6' });
+        setSubjectErrors({});
+    };
+
+    const handleUpdateSubject = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!validateSubjectForm() || !editingSubject) return;
+        setIsSubjectSubmitting(true);
+        try {
+            await updateSubject(editingSubject.id, {
+                name: subjectFormData.name,
+                color: subjectFormData.color
+            });
+            toast.success('Subject updated successfully!');
+            setEditingSubject(null);
+            setSubjectFormData({ id: '', name: '', color: '#8b5cf6' });
+            onSubjectsChanged();
+        } catch (error: any) {
+            toast.error(error.message || 'Failed to update subject. Please try again.');
+        } finally {
+            setIsSubjectSubmitting(false);
         }
     };
 
@@ -133,32 +169,44 @@ const SubjectManagerModal: React.FC<SubjectManagerModalProps> = ({
                                                 </p>
                                             </div>
                                         </div>
-                                        <button
-                                            onClick={() => handleDeleteSubject(subject.id)}
-                                            className="p-3 rounded-xl transition-all hover:bg-red-500/20 hover:text-red-400 min-w-[44px] min-h-[44px] flex items-center justify-center"
-                                            style={{ color: 'var(--text-muted)' }}
-                                            title="Delete subject"
-                                        >
-                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                            </svg>
-                                        </button>
+                                        <div className="flex items-center gap-1">
+                                            <button
+                                                onClick={() => handleEditClick(subject)}
+                                                className="p-3 rounded-xl transition-all hover:bg-blue-500/20 hover:text-blue-400 min-w-[44px] min-h-[44px] flex items-center justify-center"
+                                                style={{ color: 'var(--text-muted)' }}
+                                                title="Edit subject"
+                                            >
+                                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                                </svg>
+                                            </button>
+                                            <button
+                                                onClick={() => handleDeleteSubject(subject.id)}
+                                                className="p-3 rounded-xl transition-all hover:bg-red-500/20 hover:text-red-400 min-w-[44px] min-h-[44px] flex items-center justify-center"
+                                                style={{ color: 'var(--text-muted)' }}
+                                                title="Delete subject"
+                                            >
+                                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                </svg>
+                                            </button>
+                                        </div>
                                     </div>
                                 ))
                             )}
                         </div>
                     </div>
 
-                    {/* Add New Subject Form */}
+                    {/* Add/Edit Subject Form */}
                     <div style={{ borderTop: '1px solid var(--glass-border)' }} className="pt-4">
                         <h3 className="text-sm font-medium mb-3" style={{ color: 'var(--text-primary)' }}>
-                            Add New Subject
+                            {editingSubject ? 'Edit Subject' : 'Add New Subject'}
                         </h3>
-                        <form onSubmit={handleCreateSubject} className="space-y-4">
+                        <form onSubmit={editingSubject ? handleUpdateSubject : handleCreateSubject} className="space-y-4">
                             <div className="grid grid-cols-2 gap-3">
                                 <div>
                                     <label className="block text-xs font-medium mb-1" style={{ color: 'var(--text-muted)' }}>
-                                        Subject ID *
+                                        Subject ID {editingSubject ? '' : '*'}
                                     </label>
                                     <input
                                         type="text"
@@ -166,7 +214,7 @@ const SubjectManagerModal: React.FC<SubjectManagerModalProps> = ({
                                         onChange={(e) => handleFormChange('id', e.target.value.toUpperCase())}
                                         placeholder="e.g., CS101"
                                         className={`input-modern text-sm ${subjectErrors.id ? 'border-red-500' : ''}`}
-                                        disabled={isSubjectSubmitting}
+                                        disabled={isSubjectSubmitting || !!editingSubject}
                                     />
                                     {subjectErrors.id && <p className="text-xs mt-1" style={{ color: '#ef4444' }}>{subjectErrors.id}</p>}
                                 </div>
@@ -201,26 +249,39 @@ const SubjectManagerModal: React.FC<SubjectManagerModalProps> = ({
                                 />
                                 {subjectErrors.name && <p className="text-xs mt-1" style={{ color: '#ef4444' }}>{subjectErrors.name}</p>}
                             </div>
-                            <button
-                                type="submit"
-                                className="w-full btn-primary py-2.5 flex items-center justify-center gap-2 text-sm"
-                                disabled={isSubjectSubmitting}
-                            >
-                                {isSubjectSubmitting ? (
-                                    <>
-                                        <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
-                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                                        </svg>
-                                        Adding...
-                                    </>
-                                ) : (
-                                    <>
-                                        <span>➕</span>
-                                        Add Subject
-                                    </>
+                            <div className="flex gap-2">
+                                <button
+                                    type="submit"
+                                    className="flex-1 btn-primary py-2.5 flex items-center justify-center gap-2 text-sm"
+                                    disabled={isSubjectSubmitting}
+                                >
+                                    {isSubjectSubmitting ? (
+                                        <>
+                                            <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                                            </svg>
+                                            {editingSubject ? 'Updating...' : 'Adding...'}
+                                        </>
+                                    ) : (
+                                        <>
+                                            <span>{editingSubject ? '✓' : '➕'}</span>
+                                            {editingSubject ? 'Update Subject' : 'Add Subject'}
+                                        </>
+                                    )}
+                                </button>
+                                {editingSubject && (
+                                    <button
+                                        type="button"
+                                        onClick={handleCancelEdit}
+                                        className="px-4 py-2.5 rounded-xl font-medium text-sm transition-all hover:scale-[1.02]"
+                                        style={{ background: 'var(--glass)', border: '1px solid var(--glass-border)', color: 'var(--text-muted)' }}
+                                        disabled={isSubjectSubmitting}
+                                    >
+                                        Cancel
+                                    </button>
                                 )}
-                            </button>
+                            </div>
                         </form>
                     </div>
                 </div>
