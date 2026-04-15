@@ -209,7 +209,7 @@ const Upload: React.FC = () => {
 
                     <FileUploader
                       onFileSelect={handleFileSelect}
-                      maxSizeMB={25}
+                      maxSizeMB={50}
                       accept=".pdf,.doc,.docx,.ppt,.pptx"
                       isUploading={isUploading}
                     />
