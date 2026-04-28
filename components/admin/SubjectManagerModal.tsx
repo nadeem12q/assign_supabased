@@ -36,7 +36,7 @@ const SubjectManagerModal: React.FC<SubjectManagerModalProps> = ({
     const validateSubjectForm = (): boolean => {
         const newErrors: Record<string, string> = {};
         if (!subjectFormData.id.trim()) newErrors.id = 'Subject ID is required';
-        else if (!/^[a-zA-Z0-9-_]{3,10}$/.test(subjectFormData.id)) newErrors.id = 'Subject ID must be 3-10 alphanumeric characters';
+        else if (!/^[a-zA-Z0-9-_]{3,}$/.test(subjectFormData.id)) newErrors.id = 'Subject ID must be at least 3 alphanumeric characters (spaces not allowed)';
         if (!subjectFormData.name.trim()) newErrors.name = 'Subject name is required';
         else if (subjectFormData.name.length < 3 || subjectFormData.name.length > 50) newErrors.name = 'Subject name must be 3-50 characters';
         setSubjectErrors(newErrors);
